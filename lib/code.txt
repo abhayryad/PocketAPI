@@ -1,0 +1,309 @@
+// main.dart
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'theme_provider.dart';
+import 'theme/theme.dart';
+import 'splash_screen.dart';
+
+void main() {
+  runApp(
+    ChangeNotifierProvider(
+      create: (_) => ThemeProvider(),
+      child: const PocketApiApp(),
+    ),
+  );
+}
+
+class PocketApiApp extends StatelessWidget {
+  const PocketApiApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    return MaterialApp(
+      title: 'PocketAPI',
+      debugShowCheckedModeBanner: false,
+      theme: themeProvider.isLightMode ? lightTheme : darkTheme,
+      home: const SplashScreen(),
+    );
+  }
+}
+
+// splash_screen.dart
+import 'dart:async';
+import 'package:flutter/material.dart';
+import 'screens/home_screen.dart';
+
+class SplashScreen extends StatefulWidget {
+  const SplashScreen({super.key});
+
+  @override
+  State<SplashScreen> createState() => _SplashScreenState();
+}
+
+class _SplashScreenState extends State<SplashScreen> {
+  @override
+  void initState() {
+    super.initState();
+    Timer(const Duration(seconds: 2), () {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (_) => const HomeScreen()),
+      );
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return const Scaffold(
+      backgroundColor: Colors.black,
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.api, size: 80, color: Colors.white),
+            SizedBox(height: 20),
+            Text(
+              'PocketAPI',
+              style: TextStyle(
+                fontSize: 28,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
+            ),
+            SizedBox(height: 8),
+            Text(
+              'Quick. Clean. On the go.',
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.white70,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// theme_provider.dart
+import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+class ThemeProvider extends ChangeNotifier {
+  bool _isLightMode = false;
+
+  bool get isLightMode => _isLightMode;
+
+  ThemeProvider() {
+    _loadThemePreference();
+  }
+
+  void toggleTheme(bool value) {
+    _isLightMode = value;
+    _saveThemePreference();
+    notifyListeners();
+  }
+
+  Future<void> _loadThemePreference() async {
+    final prefs = await SharedPreferences.getInstance();
+    _isLightMode = prefs.getBool('isLightMode') ?? false;
+    notifyListeners();
+  }
+
+  Future<void> _saveThemePreference() async {
+    final prefs = await SharedPreferences.getInstance();
+    prefs.setBool('isLightMode', _isLightMode);
+  }
+}
+
+// theme.dart
+import 'package:flutter/material.dart';
+
+ThemeData lightTheme = ThemeData(
+  brightness: Brightness.light,
+  fontFamily: 'Space Grotesk',
+  useMaterial3: true,
+  scaffoldBackgroundColor: Colors.white,
+  appBarTheme: const AppBarTheme(
+    backgroundColor: Colors.white,
+    elevation: 0,
+    centerTitle: true,
+    titleTextStyle: TextStyle(
+      color: Colors.black,
+      fontSize: 22,
+      fontWeight: FontWeight.bold,
+    ),
+    iconTheme: IconThemeData(color: Colors.black),
+  ),
+  textTheme: const TextTheme(
+    bodyMedium: TextStyle(color: Colors.black),
+    titleLarge: TextStyle(color: Colors.black),
+  ),
+  navigationBarTheme: NavigationBarThemeData(
+    backgroundColor: Colors.white,
+    indicatorColor: Colors.black12,
+    labelTextStyle: MaterialStatePropertyAll(
+      TextStyle(color: Colors.black),
+    ),
+    iconTheme: MaterialStatePropertyAll(
+      IconThemeData(color: Colors.black),
+    ),
+  ),
+);
+
+ThemeData darkTheme = ThemeData(
+  brightness: Brightness.dark,
+  fontFamily: 'Space Grotesk',
+  useMaterial3: true,
+  scaffoldBackgroundColor: Colors.black,
+  appBarTheme: const AppBarTheme(
+    backgroundColor: Colors.black,
+    elevation: 0,
+    centerTitle: true,
+    titleTextStyle: TextStyle(
+      color: Colors.white,
+      fontSize: 22,
+      fontWeight: FontWeight.bold,
+    ),
+    iconTheme: IconThemeData(color: Colors.white),
+  ),
+  textTheme: const TextTheme(
+    bodyMedium: TextStyle(color: Colors.white),
+    titleLarge: TextStyle(color: Colors.white),
+  ),
+  navigationBarTheme: NavigationBarThemeData(
+    backgroundColor: Colors.black,
+    indicatorColor: Colors.white12,
+    labelTextStyle: MaterialStatePropertyAll(
+      TextStyle(color: Colors.white),
+    ),
+    iconTheme: MaterialStatePropertyAll(
+      IconThemeData(color: Colors.white),
+    ),
+  ),
+);
+
+// home_screen.dart
+import 'package:flutter/material.dart';
+import 'collections_screen.dart';
+import 'settings_screen.dart';
+import 'sandbox_screen.dart';
+
+class HomeScreen extends StatefulWidget {
+  const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  int _currentIndex = 0;
+
+  final List<Widget> _screens = const [
+    SandboxScreen(),
+    CollectionsScreen(),
+    SettingsScreen(),
+  ];
+
+  final List<String> _titles = const [
+    'Sandbox',
+    'Collections',
+    'Settings',
+  ];
+
+  final List<NavigationDestination> _destinations = const [
+    NavigationDestination(
+      icon: Icon(Icons.flash_on_outlined),
+      selectedIcon: Icon(Icons.flash_on),
+      label: 'Sandbox',
+    ),
+    NavigationDestination(
+      icon: Icon(Icons.folder_outlined),
+      selectedIcon: Icon(Icons.folder),
+      label: 'Collections',
+    ),
+    NavigationDestination(
+      icon: Icon(Icons.settings_outlined),
+      selectedIcon: Icon(Icons.settings),
+      label: 'Settings',
+    ),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(_titles[_currentIndex]),
+      ),
+      body: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 300),
+        child: _screens[_currentIndex],
+      ),
+      bottomNavigationBar: NavigationBar(
+        selectedIndex: _currentIndex,
+        onDestinationSelected: (int index) {
+          setState(() => _currentIndex = index);
+        },
+        destinations: _destinations,
+        animationDuration: const Duration(milliseconds: 300),
+        labelBehavior: NavigationDestinationLabelBehavior.onlyShowSelected,
+        height: 70,
+      ),
+    );
+  }
+}
+
+// sandbox_screen.dart
+import 'package:flutter/material.dart';
+
+class SandboxScreen extends StatelessWidget {
+  const SandboxScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const Center(
+      child: Text('Run one-time, private API requests here.'),
+    );
+  }
+}
+
+// collections_screen.dart
+import 'package:flutter/material.dart';
+
+class CollectionsScreen extends StatelessWidget {
+  const CollectionsScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const Center(
+      child: Text('Your saved API request collections appear here.'),
+    );
+  }
+}
+
+// settings_screen.dart
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../theme_provider.dart';
+
+class SettingsScreen extends StatelessWidget {
+  const SettingsScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: ListTile(
+        leading: const Icon(Icons.light_mode),
+        title: const Text('Enable Light Mode'),
+        subtitle: const Text('Switch between dark and light theme'),
+        trailing: Switch(
+          value: themeProvider.isLightMode,
+          onChanged: (value) => themeProvider.toggleTheme(value),
+        ),
+      ),
+    );
+  }
+}

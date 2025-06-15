@@ -1,0 +1,35 @@
+name: pocketapi
+description: "A new Flutter project."
+
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.7.2
+
+dependencies:
+  flutter:
+    sdk: flutter
+  provider: ^6.1.1
+  http: ^0.13.6
+  hive: ^2.2.3
+  hive_flutter: ^1.1.0
+  shared_preferences: ^2.2.2
+  path_provider: ^2.1.2
+  flutter_svg: ^2.0.9
+
+dev_dependencies:
+  hive_generator: ^2.0.1
+  build_runner: ^2.4.8
+  flutter_lints: ^5.0.0
+
+flutter:
+  uses-material-design: true
+
+  fonts:
+  - family: Space Grotesk
+    fonts:
+      - asset: fonts/SpaceGrotesk-Regular.ttf
+      - asset: fonts/SpaceGrotesk-Bold.ttf
+        weight: 700
