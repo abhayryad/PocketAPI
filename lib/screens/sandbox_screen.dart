@@ -147,7 +147,7 @@ class _SandboxScreenState extends State<SandboxScreen>
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 SizedBox(
-                  width: 120, // Increased from 100 to prevent overflow
+                  width: 120,
                   child: DropdownButtonFormField<String>(
                     value: selectedMethod,
                     decoration: const InputDecoration(
@@ -185,15 +185,20 @@ class _SandboxScreenState extends State<SandboxScreen>
             // Tab bar and content
             Column(
               children: [
-                TabBar(
-                  controller: _tabController,
-                  isScrollable: true,
-                  tabs: const [
-                    Tab(text: 'Headers'),
-                    Tab(text: 'Body'),
-                    Tab(text: 'Params'),
-                    Tab(text: 'Auth'),
-                  ],
+                SizedBox(
+                  width: double.infinity,
+                  child: TabBar(
+                    controller: _tabController,
+                    isScrollable: false, // Important for equal distribution
+                    labelPadding: EdgeInsets.zero, // Remove default padding
+                    tabs: [
+                      Tab(child: Container(width: double.infinity, child: const Text('Headers', textAlign: TextAlign.center))),
+                      Tab(child: Container(width: double.infinity, child: const Text('Body', textAlign: TextAlign.center))),
+                      Tab(child: Container(width: double.infinity, child: const Text('Params', textAlign: TextAlign.center))),
+                      Tab(child: Container(width: double.infinity, child: const Text('Auth', textAlign: TextAlign.center))),
+                    ],
+                    indicatorSize: TabBarIndicatorSize.tab,
+                  ),
                 ),
                 SizedBox(
                   height: 300,
