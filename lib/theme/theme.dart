@@ -23,10 +23,10 @@ ThemeData lightTheme = ThemeData(
   navigationBarTheme: NavigationBarThemeData(
     backgroundColor: Colors.white,
     indicatorColor: Colors.black12,
-    labelTextStyle: MaterialStatePropertyAll(
+    labelTextStyle: WidgetStatePropertyAll(
       TextStyle(color: Colors.black),
     ),
-    iconTheme: MaterialStatePropertyAll(
+    iconTheme: WidgetStatePropertyAll(
       IconThemeData(color: Colors.black),
     ),
   ),
@@ -55,10 +55,10 @@ ThemeData darkTheme = ThemeData(
   navigationBarTheme: NavigationBarThemeData(
     backgroundColor: Colors.black,
     indicatorColor: Colors.white12,
-    labelTextStyle: MaterialStatePropertyAll(
+    labelTextStyle: WidgetStatePropertyAll(
       TextStyle(color: Colors.white),
     ),
-    iconTheme: MaterialStatePropertyAll(
+    iconTheme: WidgetStatePropertyAll(
       IconThemeData(color: Colors.white),
     ),
   ),

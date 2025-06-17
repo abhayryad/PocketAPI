@@ -15,6 +15,13 @@ class _SandboxScreenState extends State<SandboxScreen>
     'GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'HEAD', 'OPTIONS'
   ];
 
+  final List<String> collectionOptions = [
+    'One-time Request',
+    'Collection 1',
+    'Collection 2'
+  ];
+  String selectedCollection = 'One-time Request';
+
   final TextEditingController urlController = TextEditingController();
   final List<Map<String, String>> headers = [];
   final List<Map<String, String>> params = [];
@@ -55,7 +62,7 @@ class _SandboxScreenState extends State<SandboxScreen>
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Back'),
+            child: const Text('Cancel'),
           ),
           ElevatedButton(
             onPressed: () {
@@ -72,6 +79,12 @@ class _SandboxScreenState extends State<SandboxScreen>
   }
 
   void _runRequest() {
+    if (urlController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please enter a valid URL')),
+      );
+      return;
+    }
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -90,28 +103,69 @@ class _SandboxScreenState extends State<SandboxScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        actions: [
-          TextButton(
-            onPressed: _runRequest,
-            child: const Text('Run', style: TextStyle(color: Colors.blue)),
-          ),
-        ],
+        title: const Text('API Sandbox'),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(12.0),
-        child: ListView(
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
           children: [
+            // Collection dropdown row
             Row(
               children: [
-                DropdownButton<String>(
-                  value: selectedMethod,
-                  onChanged: (value) => setState(() => selectedMethod = value!),
-                  items: httpMethods
-                      .map((method) => DropdownMenuItem(
-                            value: method,
-                            child: Text(method),
-                          ))
-                      .toList(),
+                Expanded(
+                  child: DropdownButtonFormField<String>(
+                    value: selectedCollection,
+                    decoration: const InputDecoration(
+                      border: OutlineInputBorder(),
+                      contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+                    ),
+                    onChanged: (value) {
+                      if (value != null) {
+                        setState(() => selectedCollection = value);
+                      }
+                    },
+                    items: collectionOptions
+                        .map((option) => DropdownMenuItem(
+                              value: option,
+                              child: Text(option, overflow: TextOverflow.ellipsis),
+                            ))
+                        .toList(),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                IconButton(
+                  onPressed: () {},
+                  icon: const Icon(Icons.add),
+                  tooltip: 'Create new collection',
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+
+            // Method and URL row
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SizedBox(
+                  width: 120, // Increased from 100 to prevent overflow
+                  child: DropdownButtonFormField<String>(
+                    value: selectedMethod,
+                    decoration: const InputDecoration(
+                      border: OutlineInputBorder(),
+                      contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+                    ),
+                    onChanged: (value) => setState(() => selectedMethod = value!),
+                    items: httpMethods
+                        .map((method) => DropdownMenuItem(
+                              value: method,
+                              child: Text(
+                                method,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(fontSize: 14),
+                              ),
+                            ))
+                        .toList(),
+                  ),
                 ),
                 const SizedBox(width: 10),
                 Expanded(
@@ -119,108 +173,153 @@ class _SandboxScreenState extends State<SandboxScreen>
                     controller: urlController,
                     decoration: const InputDecoration(
                       hintText: 'https://api.example.com/endpoint',
+                      border: OutlineInputBorder(),
+                      contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 14),
                     ),
                   ),
                 ),
               ],
             ),
             const SizedBox(height: 20),
-            TabBar(
-              controller: _tabController,
-              tabs: const [
-                Tab(text: 'Headers'),
-                Tab(text: 'Body'),
-                Tab(text: 'Params'),
-                Tab(text: 'Auth'),
-              ],
-            ),
-            SizedBox(
-              height: 300,
-              child: TabBarView(
-                controller: _tabController,
-                children: [
-                  Column(
+
+            // Tab bar and content
+            Column(
+              children: [
+                TabBar(
+                  controller: _tabController,
+                  isScrollable: true,
+                  tabs: const [
+                    Tab(text: 'Headers'),
+                    Tab(text: 'Body'),
+                    Tab(text: 'Params'),
+                    Tab(text: 'Auth'),
+                  ],
+                ),
+                SizedBox(
+                  height: 300,
+                  child: TabBarView(
+                    controller: _tabController,
                     children: [
-                      ElevatedButton(
-                        onPressed: () => _showKeyValueDialog('Header',
-                            (k, v) => setState(() => headers.add({k: v}))),
-                        child: const Text('Add Header'),
-                      ),
-                      ...headers.map((h) => ListTile(
-                            title: Text(h.keys.first),
-                            subtitle: Text(h.values.first),
-                          )),
-                    ],
-                  ),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
+                      // Headers tab
+                      ListView(
+                        padding: const EdgeInsets.all(8),
                         children: [
-                          DropdownButton<String>(
-                            value: bodyType,
-                            onChanged: (value) =>
-                                setState(() => bodyType = value!),
-                            items: const [
-                              DropdownMenuItem(
-                                  value: 'Raw', child: Text('Raw')),
-                              DropdownMenuItem(
-                                  value: 'Form Data', child: Text('Form Data')),
+                          ElevatedButton(
+                            onPressed: () => _showKeyValueDialog(
+                                'Header', (k, v) => setState(() => headers.add({k: v}))),
+                            child: const Text('Add Header'),
+                          ),
+                          const SizedBox(height: 8),
+                          ...headers.map((h) => Card(
+                            child: ListTile(
+                              title: Text(h.keys.first),
+                              subtitle: Text(h.values.first),
+                              trailing: IconButton(
+                                icon: const Icon(Icons.delete),
+                                onPressed: () => setState(() => headers.remove(h)),
+                              ),
+                            ),
+                          )),
+                        ],
+                      ),
+
+                      // Body tab
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              DropdownButton<String>(
+                                value: bodyType,
+                                onChanged: (value) => setState(() => bodyType = value!),
+                                items: const [
+                                  DropdownMenuItem(value: 'Raw', child: Text('Raw')),
+                                  DropdownMenuItem(value: 'Form Data', child: Text('Form Data')),
+                                ],
+                              ),
+                              const SizedBox(width: 10),
+                              DropdownButton<String>(
+                                value: languageType,
+                                onChanged: bodyType == 'Raw'
+                                    ? (value) => setState(() => languageType = value!)
+                                    : null,
+                                items: const [
+                                  DropdownMenuItem(value: 'JSON', child: Text('JSON')),
+                                  DropdownMenuItem(value: 'text', child: Text('Text')),
+                                  DropdownMenuItem(value: 'javascript', child: Text('JavaScript')),
+                                  DropdownMenuItem(value: 'html', child: Text('HTML')),
+                                  DropdownMenuItem(value: 'xml', child: Text('XML')),
+                                ],
+                              ),
                             ],
                           ),
-                          const SizedBox(width: 10),
-                          DropdownButton<String>(
-                            value: languageType,
-                            onChanged: (value) =>
-                                setState(() => languageType = value!),
-                            items: const [
-                              DropdownMenuItem(
-                                  value: 'JSON', child: Text('JSON')),
-                              DropdownMenuItem(
-                                  value: 'text', child: Text('Text')),
-                              DropdownMenuItem(
-                                  value: 'javascript',
-                                  child: Text('JavaScript')),
-                              DropdownMenuItem(
-                                  value: 'html', child: Text('HTML')),
-                              DropdownMenuItem(
-                                  value: 'xml', child: Text('XML')),
-                            ],
+                          const SizedBox(height: 10),
+                          Expanded(
+                            child: Container(
+                              decoration: BoxDecoration(
+                                border: Border.all(color: Colors.grey),
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: TextField(
+                                controller: bodyController,
+                                maxLines: null,
+                                expands: true,
+                                decoration: const InputDecoration(
+                                  contentPadding: EdgeInsets.all(8),
+                                  hintText: '{\n  "key": "value"\n}',
+                                  border: InputBorder.none,
+                                ),
+                              ),
+                            ),
                           ),
                         ],
                       ),
-                      const SizedBox(height: 10),
-                      Expanded(
-                        child: TextField(
-                          controller: bodyController,
-                          maxLines: null,
-                          decoration: const InputDecoration(
-                            border: OutlineInputBorder(),
-                            hintText: '{ "key": "value" }',
+
+                      // Params tab
+                      ListView(
+                        padding: const EdgeInsets.all(8),
+                        children: [
+                          ElevatedButton(
+                            onPressed: () => _showKeyValueDialog(
+                                'Param', (k, v) => setState(() => params.add({k: v}))),
+                            child: const Text('Add Parameter'),
+                          ),
+                          const SizedBox(height: 8),
+                          ...params.map((p) => Card(
+                            child: ListTile(
+                              title: Text(p.keys.first),
+                              subtitle: Text(p.values.first),
+                              trailing: IconButton(
+                                icon: const Icon(Icons.delete),
+                                onPressed: () => setState(() => params.remove(p)),
+                              ),
+                            ),
+                          )),
+                        ],
+                      ),
+
+                      // Auth tab
+                      const Center(
+                        child: Padding(
+                          padding: EdgeInsets.all(16),
+                          child: Text(
+                            'Authentication options coming soon...',
+                            style: TextStyle(fontSize: 16),
                           ),
                         ),
                       ),
                     ],
                   ),
-                  Column(
-                    children: [
-                      ElevatedButton(
-                        onPressed: () => _showKeyValueDialog('Param',
-                            (k, v) => setState(() => params.add({k: v}))),
-                        child: const Text('New Parameter'),
-                      ),
-                      ...params.map((p) => ListTile(
-                            title: Text(p.keys.first),
-                            subtitle: Text(p.values.first),
-                          )),
-                    ],
-                  ),
-                  const Center(child: Text('Auth coming soon...')),
-                ],
-              ),
+                ),
+              ],
             ),
           ],
         ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _runRequest,
+        tooltip: 'Send Request',
+        child: const Icon(Icons.send),
       ),
     );
   }
