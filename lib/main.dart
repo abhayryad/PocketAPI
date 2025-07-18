@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:hive/hive.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:pocketapi/models/collection_model.dart';
 import 'package:pocketapi/models/request_model.dart';

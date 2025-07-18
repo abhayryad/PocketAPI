@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:pocketapi/models/collection_model.dart';
-import 'package:pocketapi/models/request_model.dart';
 
 class CollectionDetailScreen extends StatelessWidget {
   final CollectionModel collection;
